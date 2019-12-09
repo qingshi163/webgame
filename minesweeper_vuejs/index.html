@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+  <header>
+    <title>MineSweeper v0.01 powered by Vue.js and Element UI</title>
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <style>
+      .cellbutton {
+        margin: 0 0;
+        width: 25px;
+        height: 25px;
+        padding: 5px;
+      }
+      .opened {
+        background-color: beige;
+      }
+      tr, th, td {
+        margin: 0 0;
+        padding: 0 0;
+        border-collapse: collapse;
+      }
+      table {
+        border-spacing: 0 0;
+        border-collapse: collapse;
+        border: 5px double #409EFF;
+        table-layout: fixed;
+      }
+    </style>
+  </header>
+  <body style="width: 100%; margin: 10px 0;">
+    <script src="https://unpkg.com/vue/dist/vue.js"></script>
+    <!--<script src="https://cdn.jsdelivr.net/npm/vue"></script>-->
+    <!-- import JavaScript -->
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+    <script src="wu.min.js" defer></script>
+    <div id="app" style="width: 900px; margin: 0 auto;">
+      <el-container>
+        <el-header style="height:auto">
+          <h3>MineSweeper v0.01 powered by Vue.js and Element UI</h3>
+        </el-header>
+        <el-main>
+          <el-row>
+            <el-button @click="height=9,width=9,mines=10">初级</el-button>
+            <el-button @click="height=16,width=16,mines=40">中级</el-button>
+            <el-button @click="height=16,width=30,mines=99">高级</el-button>
+          </el-row>
+          <el-row>
+            <label>Height: </label>
+            <el-input-number size="small" :min="2" :max="99" v-model="height" label="Height"></el-input-number>
+            <label>Width: </label>
+            <el-input-number size="small" :min="2" :max="99" v-model="width" label="Width"></el-input-number>
+            <label>Mines: </label>
+            <el-input-number size="small" :min="2" :max="200" v-model="mines" label="Mines"></el-input-number>
+            <el-button type="primary" @click="onStart()"><i class="el-icon-s-tools"></i> Start</el-button>
+          </el-row>
+          <el-divider></el-divider>
+          <div v-if="game">
+            Height: {{game.height}} Width: {{game.width}} Mines: {{game.mines}}
+            <table id="gridtable">
+              <tr v-for="(row, i) in game.grid">
+                <td v-for="(cell, j) in row">
+                  <button :id="genId(i, j)" type="button" class="el-button cellbutton"
+                    :class="cellClass(game.grid[i][j])" @click="onCellClick(i,j)"
+                    @contextmenu.prevent="onCellRightClick(i,j)">
+                    {{ cellContent(game.grid[i][j]) }}
+                  </button>
+                </td>
+              </tr>
+            </table>
+            Unmarked Mines: {{unflagMines()}}
+          </div>
+        </el-main>
+        <el-footer>Footer~!</el-footer>
+      </el-container>
+    </div>
+    <script src="game.js"></script>
+    <script>
+      function genId(i, j) {
+        return i + '_' + j;
+      }
+      function cellContent(cell) {
+        if (cell[1] && cell[0] >= 1 && cell[0] <= 8)
+          return cell[0];
+        return '';
+      }
+      function cellClass(cell) {
+        return {
+          'el-icon-s-tools': cell[1] && cell[0] == -1,
+          'el-icon-s-flag': !cell[1] && cell[2],
+          'opened': cell[1]
+        }
+      }
+      function unflagMines() {
+        return vm.$data.game ? vm.$data.game.mines - vm.$data.game.flags : 0;
+      }
+      function onCellClick(i, j) {
+        if (vm.$data.game.over || vm.$data.game.win) return;
+        vm.$data.game.act(i, j);
+        this.$forceUpdate();
+        if (vm.$data.game.win) {
+          this.$confirm('胜利！您已解开本局扫雷，是否开始新的游戏？', '提示', {
+            confirmButtonText: '新的游戏',
+            cancelButtonText: '取消',
+            type: 'success'
+          }).then(() => {
+            vm.$data.game = new Game(vm.$data.height, vm.$data.width, vm.$data.mines);
+            vm.$data.status = 'new';
+            this.$forceUpdate();
+          }).catch(()=>{});
+        }
+      }
+      function onCellRightClick(i, j) {
+        if (vm.$data.game.over) return;
+        vm.$data.game.flag(i, j);
+        this.$forceUpdate();
+      }
+      function onStart() {
+        this.$confirm('是否开始新的游戏？', '提示', {
+          confirmButtonText: '新的游戏',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          vm.$data.game = new Game(vm.$data.height, vm.$data.width, vm.$data.mines);
+          vm.$data.status = 'new';
+          this.$forceUpdate();
+        }).catch(() => {});
+      }
+      var vm = new Vue({
+        el: '#app',
+        data: {
+          height: 9,
+          width: 9,
+          mines: 10, 
+          game: null,
+          status: 'stop',
+        },
+        methods: {
+          genId,
+          cellContent,
+          cellClass,
+          unflagMines,
+          onCellClick,
+          onCellRightClick,
+          onStart,
+        },
+      });
+    </script>
+  </body>
+</html>

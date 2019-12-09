@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Chinese Checkers powered by Vuejs @ Element UI</title>
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+  </head>
+  <style>
+    .hole::before {
+      /* content: "\e7a0"; */
+    }
+    .hole:hover {
+      border: 2px solid #409EFF;
+    }
+    .hole {
+      font-family: element-icons!important;
+      vertical-align:middle;
+      border-radius: 50%;
+      padding: 0;
+      margin: 1px 1px;
+      cursor: pointer;
+      border: 2px solid #DCDFE6;
+      text-align: center;
+      outline: 0;
+      line-height: 1;
+      font-size: 30px;
+      text-indent: 0px;
+      text-shadow: none;
+      text-transform: none;
+      white-space: nowrap;
+      text-rendering: auto;
+      display:inline;
+      background-color: white;
+      color: #DCDFE6;
+    }
+    #board {
+      border: 1px solid aquamarine;
+    }
+    .row {
+      margin: 0 auto;
+      text-align: center;
+    }
+  </style>
+  <body>
+    
+    <script src="https://unpkg.com/vue/dist/vue.js"></script>
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+    <div id="app" style="width: 900px; margin: 0 auto">
+      <el-container>
+        <el-header>
+          <h3>Chinese Checkers powered by Vue.js and Element UI</h3>
+        </el-header>
+        <el-main>
+          <el-button circle class=" el-icon-circle-plus">B</el-button>
+          <input type="checkbox" class="is-circle" value="E">
+          <div class="row">
+            <label class="el-checkbox hole"></label>
+          </div>
+          <el-row>
+            
+            <label class="el-checkbox hole"></label>
+          </el-row>
+          <el-checkbox-group v-model="checked">
+            <el-checkbox-button v-for="op in options" :label="op" :key="op" class="is-circle">{{op}}</el-checkbox-button>
+          </el-checkbox-group>
+          <div id="board">
+            <div v-for="(row, i) in board" class="row">
+                <label v-for="(hole, j) in row" :id="genId(i,j)" class="hole">{{Math.abs(board[i][j])}}</label>
+            </div>
+          </div>
+        </el-main>
+      </el-container>
+    </div>
+    <script src="gamer.js"></script>
+    <script>
+      var vm = new Vue({
+        el: '#app',
+        data: {
+          options: ['A', 'B', 'C', 'D'],
+          checked: [],
+          board: board
+        },
+        methods: {
+          genId(i, j) {
+            return `${i}_${board[i][j]}`;
+          }
+        },
+      });
+    </script>
+  </body>
+</html>
