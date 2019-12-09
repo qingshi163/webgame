@@ -33,16 +33,6 @@ class Game {
   isInBound(y, x) {
     return y >= 0 && y < this.height && x >= 0 && x < this.width;
   }
-  roundOf(y, x, f) {
-    if (this.isInBound(y-1,x-1))   f(y-1,x-1);
-    if (this.isInBound(y-1,x))     f(y-1,x);
-    if (this.isInBound(y-1,x+1))   f(y-1,x+1);
-    if (this.isInBound(y,x-1))     f(y,x-1);
-    if (this.isInBound(y,x+1))     f(y,x+1);
-    if (this.isInBound(y+1,x-1))   f(y+1,x-1);
-    if (this.isInBound(y+1,x))     f(y+1,x);
-    if (this.isInBound(y+1,x+1))   f(y+1,x+1);
-  }
   setup() {
     console.log(`SETUP: height: ${this.height} width: ${this.width} mines: ${this.mines}`);
     if (this.init) this.clear();
