@@ -5,11 +5,19 @@
     <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
   </head>
   <style>
+    #current-indicator {
+      font-family: element-icons!important;
+      font-size: 30px;
+      float: right;
+    }
+    #current-indicator::after {
+      content: "\e7a0";
+    }
     .hole::before {
       content: "\e7a0";
     }
     .hole:hover {
-      border: 2px solid #409EFF;
+      border-color:#409EFF;
     }
     .hole {
       font-family: element-icons!important;
@@ -30,7 +38,14 @@
       text-rendering: auto;
       display:inline;
       background-color: white;
-      color: #DCDFE6;
+      color: white;
+    }
+    .possible-move {
+      border-color:forestgreen;
+    }
+    .select {
+      /* border-color: #80BEFF; */
+      border: 2px dashed black;
     }
     #board {
       border: 1px solid aquamarine;
@@ -39,32 +54,45 @@
       margin: 0 auto;
       text-align: center;
     }
+    .player_tp {
+      color:#409EFF;
+    }
+    .player_tl {
+      color:chartreuse;
+    }
+    .player_tr {
+      color:gold;
+    }
+    .player_bl {
+      color:firebrick;
+    }
+    .player_br {
+      color:lightslategray;
+    }
+    .player_bt {
+      color:magenta;
+    }
   </style>
   <body>
     
     <script src="https://unpkg.com/vue/dist/vue.js"></script>
     <script src="https://unpkg.com/element-ui/lib/index.js"></script>
-    <div id="app" style="width: 900px; margin: 0 auto">
+    <div id="app" style="width: 600px; margin: 0 auto">
       <el-container>
         <el-header>
           <h3>Chinese Checkers powered by Vue.js and Element UI</h3>
         </el-header>
         <el-main>
-          <el-button circle class=" el-icon-circle-plus">B</el-button>
-          <input type="checkbox" class="is-circle" value="E">
-          <div class="row">
-            <label class="el-checkbox hole"></label>
-          </div>
           <el-row>
-            
-            <label class="el-checkbox hole"></label>
+            <el-button type="primary" @click="onTwoPlayer">两人对战</el-button>
+            <el-button type="primary" @click="onFourPlayer">四人对战</el-button>
+            <el-button type="primary" @click="onSixPlayer">六人对战</el-button>
+            <label id="current-indicator" :class="currentIdClass()">当前</label>
           </el-row>
-          <el-checkbox-group v-model="checked">
-            <el-checkbox-button v-for="op in options" :label="op" :key="op" class="is-circle">{{op}}</el-checkbox-button>
-          </el-checkbox-group>
+          <el-divider></el-divider>
           <div id="board">
-            <div v-for="(row, i) in board" class="row">
-                <label v-for="(hole, j) in row" :id="genId(i,j)" class="hole">{{Math.abs(board[i][j])}}</label>
+            <div v-for="(row, i) in board.rels" class="row">
+                <label v-for="(hole, j) in row" @click="onHoleClick(i,j)" :id="genId(i,j)" class="hole" :class="getHoleClass(i,j)"></label>
             </div>
           </div>
         </el-main>
@@ -72,16 +100,145 @@
     </div>
     <script src="gamer.js"></script>
     <script>
+      var board = new Board();
+      var players = {
+        tp: new Player(board, 'tp'),
+        tl: new Player(board, 'tl'),
+        bl: new Player(board, 'bl'),
+        bt: new Player(board, 'bt'),
+        br: new Player(board, 'br'),
+        tr: new Player(board, 'tr'),
+      };
+      var select = null;
+      var currentId = 'tp';
+      var possibleMove = [];
+      function nextPlayer() {
+        if (!players || !currentId) return;
+        let ids = Object.keys(players);
+        for (let i=0; i<ids.length; i++) {
+          if (currentId == ids[i]) {
+            currentId = ids[i+1==ids.length ? 0 : i+1];
+            select = null;
+            possibleMove = [];
+            return;
+          }
+        }
+      }
+      function setSelect(i, j) {
+        if (!select) {
+          if (board.holes[i][j].val == currentId) {
+            select = [i, j];
+            return true;
+          }
+          return false;
+        }
+        if (select[0] == i && select[1] == j) {
+          select = null;
+          return true;
+        }
+        if (board.holes[i][j].val == currentId) {
+          select = [i, j];
+          return true;
+        }
+        return false;
+      }
+      function confirmNewGame(callback) {
+        vm.$confirm('是否开始新的游戏？', '提示', {
+          confirmButtonText: '新的游戏',
+          cancelButtonText: '取消',
+          type: 'warning',
+        }).then(callback).catch(()=>{});
+      }
+      function twoPlayer() {
+        board.init();
+        select = null;
+        possibleMove = [];
+        players = {
+          tp: new Player(board, 'tp'),
+          bt: new Player(board, 'bt'),
+        };
+        currentId = 'tp';
+      }
+      function fourPlayer() {
+        board.init();
+        select = null;
+        possibleMove = [];
+        players = {
+          tp: new Player(board, 'tp'),
+          tl: new Player(board, 'tl'),
+          bt: new Player(board, 'bt'),
+          br: new Player(board, 'br'),
+        };
+        currentId = 'tp';
+      }
+      function sixPlayer() {
+        board.init();
+        select = null;
+        possibleMove = [];
+        players = {
+          tp: new Player(board, 'tp'),
+          tl: new Player(board, 'tl'),
+          bl: new Player(board, 'bl'),
+          bt: new Player(board, 'bt'),
+          br: new Player(board, 'br'),
+          tr: new Player(board, 'tr'),
+        };
+        currentId = 'tp';
+      }
       var vm = new Vue({
         el: '#app',
         data: {
-          options: ['A', 'B', 'C', 'D'],
-          checked: [],
-          board: board
+          board: board,
         },
         methods: {
           genId(i, j) {
-            return `${i}_${board[i][j]}`;
+            return `${i}_${board.rels[i][j]}`;
+          },
+          getHoleClass(i, j) {
+            let cls = '';
+            let val = board.holes[i][j].val;
+            if (val) {
+              cls += ' player_' + val;
+            }
+            if (select && select[0] == i && select[1] == j) {
+              cls += ' select';
+            }
+            if (possibleMove.some(hole => hole.y==i&&hole.x==j)) {
+              cls += ' possible-move';
+            }
+            return cls;
+          },
+          onHoleClick(i, j) {
+            console.log(`Click: i: ${i}, j: ${j}`);
+            if (setSelect(i, j)) {
+              if (select) {
+                possibleMove = board.getPossibleMove(board.holes[i][j]);
+              } else {
+                possibleMove = [];
+              }
+            } else {
+              if (select && hasNotPawn(board.holes[i][j]) &&
+                  possibleMove.some(hole => hole.y == i && hole.x == j)) {
+                players[currentId].move(board.holes[select[0]][select[1]], board.holes[i][j]);
+                nextPlayer();
+              }
+            }
+            this.$forceUpdate();
+          },
+          onTwoPlayer() {
+            confirmNewGame(twoPlayer);
+            this.$forceUpdate();
+          },
+          onFourPlayer(confirm) {
+            confirmNewGame(fourPlayer);
+            this.$forceUpdate();
+          },
+          onSixPlayer(confirm) {
+            confirmNewGame(sixPlayer);
+            this.$forceUpdate();
+          },
+          currentIdClass() {
+            return currentId ? ' player_' + currentId : '';
           }
         },
       });
