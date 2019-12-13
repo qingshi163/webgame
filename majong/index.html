@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>MaJong</title>
+    <style>
+      @font-face {
+        font-family: MajongFont;
+        src: url(ma.ttf) format("truetype");
+      }
+      #maintable {
+        font-family: 'MajongFont';
+        font-size: 50px;
+      }
+    </style>
+  </head>
+  <body>
+    <script src="https://unpkg.com/vue/dist/vue.js"></script>
+    <script src="game.js"></script>
+    <div id="main">
+      <table v-if="game" id="maintable">
+        <tr v-for="(row,i) in game.board">
+          <td v-for="(card,j) in row">
+            <label>{{card}}</label>
+          </td>
+        </tr>
+      </table>
+    </div>
+    <script>init()</script>
+  </body>
+</html>

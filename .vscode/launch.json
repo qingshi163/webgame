@@ -11,6 +11,12 @@
             "file": "${workspaceFolder}/chinesecheckers/index.html"
             // "url": "http://localhost:8080",
             // "webRoot": "${workspaceFolder}"
+        },
+        {
+            "type": "chrome",
+            "request": "launch",
+            "name": "Launch Majong",
+            "file": "${workspaceFolder}/majong/index.html"
         }
     ]
 }
